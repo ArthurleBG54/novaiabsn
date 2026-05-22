@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusAI - Le Copilote Business Ultime</title>
+    <style>
+        /* Variables de couleur et thèmes */
+        :root {
+            --bg-dark: #0a0b10;
+            --bg-card: #121420;
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --accent-groq: #f59e0b;
+            --accent-claude: #cc7d6c;
+            --accent-manus: #10b981;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* Reset global & mise en page */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* Structure en grille pour imiter l'interface Claude */
+        .app-container {
+            display: table;
+            width: 100%;
+            height: 100vh;
+            border-collapse: collapse;
+        }
+
+        .app-row {
+            display: table-row;
+        }
+
+        /* Sidebar latérale */
+        .sidebar {
+            display: table-cell;
+            width: 260px;
+            background-color: #0f111a;
+            border-right: 1px solid var(--border-color);
+            vertical-align: top;
+            padding: 20px;
+        }
+
+        .logo-section {
+            padding: 10px 0 25px 0;
+            font-size: 18pt;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #fff;
+            background: linear-gradient(45deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-group {
+            margin-bottom: 25px;
+        }
+
+        .nav-heading {
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 10px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 10.5pt;
+            margin-bottom: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            border-left: 3px solid var(--primary);
+            padding-left: 9px;
+        }
+
+        /* Section Principale de l'interface */
+        .main-content {
+            display: table-cell;
+            vertical-align: top;
+            background-color: var(--bg-dark);
+        }
+
+        /* Vue Chat */
+        .chat-view {
+            display: table;
+            width: 100%;
+            height: 100vh;
+            border-collapse: collapse;
+        }
+
+        .chat-header {
+            display: table-row;
+            height: 60px;
+            background-color: rgba(10, 11, 16, 0.8);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-inner {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 0 30px;
+        }
+
+        /* Sélecteur de modèle stylé */
+        .model-selector {
+            display: inline-block;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            border-radius: 20px;
+        }
+
+        .model-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 16px;
+            font-size: 9.5pt;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .model-btn.active[data-model="groq"] {
+            background-color: var(--accent-groq);
+            color: #000;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .model-btn.active[data-model="claude"] {
+            background-color: var(--accent-claude);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(204, 125, 108, 0.3);
+        }
+
+        .model-btn.active[data-model="manus"] {
+            background-color: var(--accent-manus);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Zone d'affichage des messages */
+        .chat-body {
+            display: table-row;
+        }
+
+        .messages-container {
+            display: table-cell;
+            vertical-align: top;
+            padding: 30px;
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        /* Écran d'accueil du chat vide */
+        .welcome-screen {
+            max-width: 700px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .welcome-screen h1 {
+            font-size: 24pt;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-screen p {
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-size: 11pt;
+        }
+
+        /* Grille des Modèles Présentés */
+        .models-showcase {
+            display: table;
+            width: 100%;
+            margin-bottom: 40px;
+            border-spacing: 15px;
+        }
+
+        .model-card-cell {
+            display: table-cell;
+            width: 33.33%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            vertical-align: top;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .model-card-cell:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .card-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .badge-groq { background-color: rgba(245, 158, 11, 0.15); color: var(--accent-groq); }
+        .badge-claude { background-color: rgba(204, 125, 108, 0.15); color: var(--accent-claude); }
+        .badge-manus { background-color: rgba(16, 185, 129, 0.15); color: var(--accent-manus); }
+
+        .model-card-cell h3 { font-size: 13pt; margin-bottom: 8px; }
+        .model-card-cell p { font-size: 10pt; color: var(--text-muted); line-height: 1.4; margin-bottom: 0; }
+
+        /* Structure des messages de chat */
+        .message-row {
+            margin-bottom: 25px;
+            max-width: 800px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .message-row.user { margin-left: auto; text-align: right; }
+        .message-row.assistant { margin-right: auto; text-align: left; }
+
+        .message-box {
+            display: inline-block;
+            padding: 14px 20px;
+            border-radius: 16px;
+            font-size: 11pt;
+            max-width: 85%;
+            text-align: left;
+        }
+
+        .message-row.user .message-box {
+            background-color: var(--primary);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-row.assistant .message-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Indicateur de frappe/chargement */
+        .typing-indicator {
+            display: none;
+            padding: 15px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: fit-content;
+            margin-bottom: 25px;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            margin-right: 4px;
+            animation: wave 1.3s linear infinite;
+        }
+        .dot:nth-child(2) { animation-delay: -1.1s; }
+        .dot:nth-child(3) { animation-delay: -0.9s; }
+
+        /* Barre d'input inférieure */
+        .chat-footer {
+            display: table-row;
+            height: 100px;
+        }
+
+        .input-box-cell {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 0 30px 20px 30px;
+        }
+
+        .input-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 10px 15px;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        .input-container textarea {
+            width: 100%;
+            height: 50px;
+            background: none;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-family: var(--font-family);
+            font-size: 11pt;
+            resize: none;
+            padding-right: 50px;
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14pt;
+            transition: transform 0.2s ease;
+        }
+
+        .send-btn:hover { transform: scale(1.05); }
+
+        /* VUE PLANS ET TARIFS (Masquée par défaut) */
+        .pricing-view {
+            display: none;
+            padding: 60px 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .pricing-header h2 { font-size: 26pt; margin-bottom: 15px; }
+        .pricing-header p { color: var(--text-muted); font-size: 12pt; }
+
+        .pricing-grid {
+            display: table;
+            width: 100%;
+            border-spacing: 25px;
+        }
+
+        .pricing-card-cell {
+            display: table-cell;
+            width: 50%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            vertical-align: top;
+            position: relative;
+        }
+
+        .pricing-card-cell.premium {
+            border-color: var(--primary);
+            box-shadow: 0 0 25px var(--primary-glow);
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 8.5pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .plan-name { font-size: 18pt; font-weight: bold; margin-bottom: 10px; }
+        .plan-price { font-size: 32pt; font-weight: bold; margin-bottom: 25px; }
+        .plan-price span { font-size: 14pt; color: var(--text-muted); }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 35px;
+        }
+
+        .features-list li {
+            font-size: 10.5pt;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            padding-left: 24px;
+            position: relative;
+        }
+
+        .features-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .features-list li.unsupported {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        .features-list li.unsupported::before {
+            content: "✕";
+            color: #ef4444;
+        }
+
+        .plan-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            text-align: center;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 11pt;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-free { background-color: rgba(255,255,255,0.08); color: white; }
+        .btn-free:hover { background-color: rgba(255,255,255,0.15); }
+        .btn-premium { background-color: var(--primary); color: white; }
+        .btn-premium:hover { background-color: #4f46e5; }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes wave {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="app-row">
+            
+            <!-- SECTION BARRE LATÉRALE -->
+            <div class="sidebar">
+                <div class="logo-section">NexusAI</div>
+                
+                <div class="nav-group">
+                    <div class="nav-heading">Navigation</div>
+                    <a href="#" class="nav-item active" id="nav-chat">Copilote Chat</a>
+                    <a href="#" class="nav-item" id="nav-pricing">Plans & Tarifs</a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-heading">Historique Récent</div>
+                    <a href="#" class="nav-item" style="font-size: 9.5pt; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Analyse Marché de l'art</a>
+                    <a href="#" class="nav-item" style="font-size: 9.5pt; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Optimisation Facebook Ads</a>
+                </div>
+            </div>
+
+            <!-- SECTION CONTENU CENTRAL -->
+            <div class="main-content">
+                
+                <!-- ÉCRAN 1 : LE CHAT COMPLET STYLE CLAUDE -->
+                <div class="chat-view" id="view-chat-container">
+                    <div class="chat-header">
+                        <div class="header-inner">
+                            <div class="model-selector">
+                                <button class="model-btn active" data-model="groq">Groq (Llama 3)</button>
+                                <button class="model-btn" data-model="claude">Claude 3.5</button>
+                                <button class="model-btn" data-model="manus">Manus Agent</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-body">
+                        <div class="messages-container" id="chat-messages-box">
+                            
+                            <!-- Écran de bienvenue par défaut -->
+                            <div class="welcome-screen" id="welcome-wrapper">
+                                <h1>Comment puis-je propulser votre Business aujourd'hui ?</h1>
+                                <p>Sélectionnez un modèle et posez votre question stratégique ou demandez une action autonome.</p>
+                                
+                                <div class="models-showcase">
+                                    <div class="model-card-cell">
+                                        <span class="card-badge badge-groq">Gratuit / Standard</span>
+                                        <h3>Groq Llama 3</h3>
+                                        <p>Vitesse d'affichage ultra-instantanée. Idéal pour le brainstorming rapide et les réponses de base.</p>
+                                    </div>
+                                    <div class="model-card-cell">
+                                        <span class="card-badge badge-claude">Premium</span>
+                                        <h3>Claude 3.5 Sonnet</h3>
+                                        <p>L'excellence de la logique business, de la stratégie financière et de la rédaction de contenu d'expert.</p>
+                                    </div>
+                                    <div class="model-card-cell">
+                                        <span class="card-badge badge-manus">Premium</span>
+                                        <h3>Manus Agent</h3>
+                                        <p>L'agent d'action autonome. Navigue sur le web, extrait des données et crée des mini-sites de A à Z.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Les messages dynamiques apparaîtront ici -->
+                            <div id="dynamic-messages"></div>
+
+                            <!-- Indicateur de chargement -->
+                            <div class="typing-indicator" id="indicator">
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="chat-footer">
+                        <div class="input-box-cell">
+                            <div class="input-container">
+                                <textarea placeholder="Posez votre question business ou décrivez une tâche à exécuter..." id="user-input-field"></textarea>
+                                <button class="send-btn" id="submit-btn">→</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ÉCRAN 2 : LES PLANS ET TARIFS -->
+                <div class="pricing-view" id="view-pricing-container">
+                    <div class="pricing-header">
+                        <h2>Choisissez la puissance adaptée à votre croissance</h2>
+                        <p>Basculez d'un modèle à l'autre selon vos objectifs du jour.</p>
+                    </div>
+
+                    <div class="pricing-grid">
+                        <div class="pricing-card-cell">
+                            <div class="plan-name">Plan Standard</div>
+                            <div class="plan-price">0€ <span>/ mois</span></div>
+                            <ul class="features-list">
+                                <li>Accès complet au modèle ultra-rapide Groq (Llama 3)</li>
+                                <li>Conseils business de base et génération d'idées</li>
+                                <li>Historique des conversations limité à 3 jours</li>
+                                <li class="unsupported">Modèle d'analyse premium Claude 3.5</li>
+                                <li class="unsupported">Exécution d'actions et navigation web par Manus</li>
+                            </ul>
+                            <button class="plan-btn btn-free">Plan Actuel</button>
+                        </div>
+
+                        <div class="pricing-card-cell premium">
+                            <div class="plan-badge">Recommandé</div>
+                            <div class="plan-name">Plan Premium Pro</div>
+                            <div class="plan-price">49€ <span>/ mois</span></div>
+                            <ul class="features-list">
+                                <li>Accès illimité à <strong>Groq (Llama 3)</strong> sans limite de débit</li>
+                                <li>Accès complet au cerveau stratégique <strong>Claude 3.5 Sonnet</strong></li>
+                                <li>Accès complet à l'agent autonome <strong>Manus</strong> (Navigation & Code)</li>
+                                <li>Connexions aux plateformes Stripe, Shopify, Meta Ads</li>
+                                <li>Support client prioritaire 24/7</li>
+                            </ul>
+                            <button class="plan-btn btn-premium">Passer à Pro</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LOGIQUE LOGICIELLE ET SIMULATION -->
+    <script>
+        // Gestion de la navigation entre les onglets
+        const navChat = document.getElementById('nav-chat');
+        const navPricing = document.getElementById('nav-pricing');
+        const viewChat = document.getElementById('view-chat-container');
+        const viewPricing = document.getElementById('view-pricing-container');
+
+        navChat.addEventListener('click', (e) => {
+            e.preventDefault();
+            navPricing.classList.remove('active');
+            navChat.classList.add('active');
+            viewPricing.style.display = 'none';
+            viewChat.style.display = 'table';
+        });
+
+        navPricing.addEventListener('click', (e) => {
+            e.preventDefault();
+            navChat.classList.remove('active');
+            navPricing.classList.add('active');
+            viewChat.style.display = 'none';
+            viewPricing.style.display = 'block';
+        });
+
+        // Gestion du sélecteur de modèle d'IA
+        let currentModel = 'groq';
+        const modelButtons = document.querySelectorAll('.model-btn');
+
+        modelButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modelButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentModel = btn.getAttribute('data-model');
+            });
+        });
+
+        // Logique de simulation du chat
+        const inputField = document.getElementById('user-input-field');
+        const sendBtn = document.getElementById('submit-btn');
+        const dynamicMessages = document.getElementById('dynamic-messages');
+        const welcomeWrapper = document.getElementById('welcome-wrapper');
+        const indicator = document.getElementById('indicator');
+        const messagesContainer = document.getElementById('chat-messages-box');
+
+        function appendMessage(role, text) {
+            const row = document.createElement('div');
+            row.className = `message-row ${role}`;
+            
+            const box = document.createElement('div');
+            box.className = 'message-box';
+            box.innerText = text;
+            
+            row.appendChild(box);
+            dynamicMessages.appendChild(row);
+            
+            // Scroll automatique vers le bas
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function getSimulatedResponse(model, prompt) {
+            if (model === 'groq') {
+                return "[⚡ Groq Llama 3 - Vitesse Éclair] : Pour exécuter votre idée rapidement, je vous suggère de valider cette hypothèse auprès de 10 clients cibles dès aujourd'hui via un formulaire simple. C'est rapide et sans frais.";
+            } else if (model === 'claude') {
+                return "[🧠 Claude 3.5 - Analyse Stratégique] : D'un point de vue structurel et financier, pour scaler efficacement cette activité, vous devez segmenter votre offre en trois niveaux de valeur, optimiser votre coût d'acquisition client (CAC) et maximiser la valeur vie client (LTV). Voici le plan de déploiement en 4 étapes...";
+            } else {
+                return "[🤖 Agent Manus - Exécution Autonome] : J'ai bien reçu votre consigne d'action. Je lance mon navigateur virtuel pour scrapper les plateformes cibles et analyser les données. Vos livrables de code et rapports seront générés d'ici quelques minutes dans votre espace de stockage.";
+            }
+        }
+
+        function handleSend() {
+            const query = inputField.value.trim();
+            if (!query) return;
+
+            // Masquer l'écran d'accueil si c'est le premier message
+            welcomeWrapper.style.display = 'none';
+
+            // Afficher le message utilisateur
+            appendMessage('user', query);
+            inputField.value = '';
+
+            // Afficher l'indicateur de chargement
+            indicator.style.display = 'block';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Simuler un délai de calcul asynchrone de l'IA
+            setTimeout(() => {
+                indicator.style.display = 'none';
+                const aiResponse = getSimulatedResponse(currentModel, query);
+                appendMessage('assistant', aiResponse);
+            }, 1200);
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+    </script>
+</body>
+</html>
